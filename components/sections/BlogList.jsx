@@ -5,33 +5,35 @@ import Link from 'next/link'
 import { BLOG_POSTS } from '@/data/blogPosts'
 
 export default function BlogList() {
-  const [likedPosts, setLikedPosts] = useState({})
-  const [postViews, setPostViews] = useState({})
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({})
+  const [postViews, setPostViews] = useState<Record<string, number>>({})
+  const [postLikes, setPostLikes] = useState<Record<string, number>>({})
 
   useEffect(() => {
-    // Load saved likes and views from localStorage
     const savedLikes = localStorage.getItem('likedPosts')
     const savedViews = localStorage.getItem('postViews')
-    
+
     if (savedLikes) setLikedPosts(JSON.parse(savedLikes))
     if (savedViews) setPostViews(JSON.parse(savedViews))
-    
-    // Initialize views for posts that haven't been viewed
+
+    // Load per-post likes and views from localStorage
+    const likesMap: Record<string, number> = {}
+    const viewsMap: Record<string, number> = {}
+
     BLOG_POSTS.forEach(post => {
-      if (!postViews[post.id]) {
-        const savedView = localStorage.getItem(`views_${post.id}`)
-        if (savedView) {
-          setPostViews(prev => ({ ...prev, [post.id]: parseInt(savedView) }))
-        } else {
-          // Set default view count from blog data (25)
-          setPostViews(prev => ({ ...prev, [post.id]: post.views }))
-        }
-      }
+      const storedLikes = localStorage.getItem(`likes_${post.id}`)
+      likesMap[post.id] = storedLikes ? parseInt(storedLikes) : post.likes || 15
+
+      const storedViews = localStorage.getItem(`views_${post.id}`)
+      viewsMap[post.id] = storedViews ? parseInt(storedViews) : post.views || 25
     })
+
+    setPostLikes(likesMap)
+    setPostViews(viewsMap)
   }, [])
 
-  const getCategoryColor = (category) => {
-    const colors = {
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
       "Web Development": "from-blue-500 to-cyan-500",
       "Next.js": "from-gray-600 to-gray-800",
       "CSS": "from-blue-400 to-indigo-500",
@@ -45,29 +47,6 @@ export default function BlogList() {
     return colors[category] || "from-blue-500 to-purple-500"
   }
 
-  const getPostViews = (id) => {
-    // First check localStorage postViews, then fallback to BLOG_POSTS default
-    return postViews[id] || BLOG_POSTS.find(p => p.id === id)?.views || 25
-  }
-  
-  const getPostLikes = (id) => {
-    const post = BLOG_POSTS.find(p => p.id === id)
-    if (!post) return 0
-    
-    // Check if there's a stored like count from individual post
-    const storedLikes = localStorage.getItem(`likes_${id}`)
-    if (storedLikes) {
-      return parseInt(storedLikes)
-    }
-    
-    // Check if user liked in global storage
-    if (likedPosts[id]) {
-      return post.likes + 1
-    }
-    
-    return post.likes || 15
-  }
-
   return (
     <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
@@ -79,14 +58,18 @@ export default function BlogList() {
             Welcome to My <span className="gradient-animate">Tech Blog</span>
           </h1>
           <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
-          <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto">Exploring Tech, Coding, and Creative Projects — sharing my journey in web development.</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto">
+            Exploring Tech, Coding, and Creative Projects — sharing my journey in web development.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {BLOG_POSTS.map((post, idx) => {
-            const views = getPostViews(post.id)
-            const likes = getPostLikes(post.id)
-            const isLiked = likedPosts[post.id] || localStorage.getItem(`liked_${post.id}`) === 'true' || false
+            const views = postViews[post.id] ?? post.views ?? 25
+            const likes = postLikes[post.id] !== undefined
+              ? (likedPosts[post.id] ? postLikes[post.id] + 1 : postLikes[post.id])
+              : (post.likes || 15)
+            const isLiked = likedPosts[post.id] ?? false  // ✅ No localStorage here
 
             return (
               <div key={post.id} data-aos="fade-up" data-aos-delay={idx * 50} className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-gray-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500">
@@ -106,7 +89,7 @@ export default function BlogList() {
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
                     <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                       <span><i className="far fa-eye mr-1"></i> {views}</span>
-                      <span><i className={`far fa-heart ${isLiked ? 'fas text-red-500' : 'far'} mr-1`}></i> {likes}</span>
+                      <span><i className={`${isLiked ? 'fas text-red-500' : 'far fa-heart'} mr-1`}></i> {likes}</span>
                     </div>
                     <span className="text-blue-600 text-sm font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
                       Read More <i className="fas fa-arrow-right text-xs"></i>
