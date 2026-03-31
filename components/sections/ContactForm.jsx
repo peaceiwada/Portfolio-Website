@@ -148,7 +148,7 @@ export default function ContactForm() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between flex-wrap gap-3">
-                  <span className="text-gray-700 dark:text-gray-300">+2347043016178</span>
+                  <span className="text-gray-700 dark:text-gray-300">+234 704 301 6178</span>
                   <button onClick={openWhatsApp} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm transition">
                     <i className="fab fa-whatsapp"></i> Message
                   </button>
