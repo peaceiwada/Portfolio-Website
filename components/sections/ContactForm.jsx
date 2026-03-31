@@ -71,7 +71,7 @@ export default function ContactForm() {
   }
 
   const openWhatsApp = () => {
-    const phone = "2347012345678"
+    const phone = "2347043016178"
     const message = `Hello! My name is ${formData.name || 'Visitor'}. Email: ${formData.email || 'N/A'}. Message: ${formData.message || 'I would like to connect!'}`
 
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank')
