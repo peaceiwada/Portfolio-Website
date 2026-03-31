@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { BLOG_POSTS } from '@/data/blogPosts'
 
 export default function BlogList() {
-  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({})
-  const [postViews, setPostViews] = useState<Record<string, number>>({})
-  const [postLikes, setPostLikes] = useState<Record<string, number>>({})
+  const [likedPosts, setLikedPosts] = useState({})
+  const [postViews, setPostViews] = useState({})
+  const [postLikes, setPostLikes] = useState({})
 
   useEffect(() => {
     const savedLikes = localStorage.getItem('likedPosts')
@@ -16,9 +16,8 @@ export default function BlogList() {
     if (savedLikes) setLikedPosts(JSON.parse(savedLikes))
     if (savedViews) setPostViews(JSON.parse(savedViews))
 
-    // Load per-post likes and views from localStorage
-    const likesMap: Record<string, number> = {}
-    const viewsMap: Record<string, number> = {}
+    const likesMap = {}
+    const viewsMap = {}
 
     BLOG_POSTS.forEach(post => {
       const storedLikes = localStorage.getItem(`likes_${post.id}`)
@@ -32,8 +31,8 @@ export default function BlogList() {
     setPostViews(viewsMap)
   }, [])
 
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
+  const getCategoryColor = (category) => {
+    const colors = {
       "Web Development": "from-blue-500 to-cyan-500",
       "Next.js": "from-gray-600 to-gray-800",
       "CSS": "from-blue-400 to-indigo-500",
@@ -69,7 +68,7 @@ export default function BlogList() {
             const likes = postLikes[post.id] !== undefined
               ? (likedPosts[post.id] ? postLikes[post.id] + 1 : postLikes[post.id])
               : (post.likes || 15)
-            const isLiked = likedPosts[post.id] ?? false  // ✅ No localStorage here
+            const isLiked = likedPosts[post.id] ?? false
 
             return (
               <div key={post.id} data-aos="fade-up" data-aos-delay={idx * 50} className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-gray-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500">
